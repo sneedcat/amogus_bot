@@ -1,7 +1,7 @@
 use crate::escape::escape;
 use crate::statics::{RAND_GEN, RE_SHORTS, SHORTS_CLIENT};
 use rand::RngCore;
-use rustube::{Id, IdBuf, VideoFetcher};
+use rustube::{IdBuf, VideoFetcher};
 use std::error::Error;
 
 pub async fn shorts() -> Result<(String, String), Box<dyn Error + Sync + Send>> {

@@ -2,14 +2,16 @@ use std::fmt::{Display, Formatter, Debug};
 
 pub enum Error {
     Shorts,
-    YtDownload
+    YtDownload,
+    Xkcd,
 }
 
 impl Debug for Error {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            Shorts => write!(f, "shorts error"),
-            YtDownload => write!(f, "ytdownload error"),
+            Error::Shorts => write!(f, "shorts error"),
+            Error::YtDownload => write!(f, "yt_download error"),
+            Error::Xkcd => write!(f, "xkcd error"),
         }
     }
 }
