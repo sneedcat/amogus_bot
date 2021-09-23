@@ -3,10 +3,12 @@ mod escape;
 mod shorts;
 mod statics;
 mod xkcd;
+mod yt_audio;
 mod yt_download;
+mod ffmpeg;
 
 use std::error::Error;
-use teloxide::payloads::SendPhotoSetters;
+use teloxide::payloads::{SendAudioSetters, SendPhotoSetters};
 use teloxide::types::{InputFile, ParseMode};
 use teloxide::{prelude::*, utils::command::BotCommand};
 
@@ -17,9 +19,11 @@ enum Command {
     Help,
     #[command(description = "returns a youtube shorts video.")]
     Shorts,
-    #[command(description = "downloads a video")]
+    #[command(description = "returns a video with audio of a youtube url")]
     YtDownload(String),
-    #[command(description = "grabs a xkcd image")]
+    #[command(description = "returns only audio of a youtube url")]
+    YtAudio(String),
+    #[command(description = "returns a xkcd comic")]
     Xkcd(String),
 }
 
@@ -37,6 +41,26 @@ async fn answer(
                 .caption(caption)
                 .parse_mode(ParseMode::MarkdownV2)
                 .await?
+        }
+        Command::YtAudio(s) => {
+            let (file_name, title, thumb) = yt_audio::yt_audio(&s).await?;
+            let input_file = InputFile::File((&file_name).into());
+            if let Some(thumb) = thumb {
+                let file = InputFile::File((&thumb).into());
+                cx.requester
+                    .send_audio(cx.update.chat.id, input_file)
+                    .title(title)
+                    .thumb(file)
+                    .await?;
+                tokio::fs::remove_file(thumb).await?;
+            } else {
+                cx.requester
+                    .send_audio(cx.update.chat.id, input_file)
+                    .title(title)
+                    .await?;
+            }
+            tokio::fs::remove_file(file_name).await?;
+            cx.update
         }
         Command::Shorts => {
             let (d_url, caption) = shorts::shorts().await?;

@@ -3,7 +3,9 @@ use std::fmt::{Display, Formatter, Debug};
 pub enum Error {
     Shorts,
     YtDownload,
+    YtAudio,
     Xkcd,
+    Ffmpeg,
 }
 
 impl Debug for Error {
@@ -11,7 +13,9 @@ impl Debug for Error {
         match self {
             Error::Shorts => write!(f, "shorts error"),
             Error::YtDownload => write!(f, "yt_download error"),
+            Error::YtAudio => write!(f, "yt_audio error"),
             Error::Xkcd => write!(f, "xkcd error"),
+            Error::Ffmpeg => write!(f, "ffmpeg error"),
         }
     }
 }
