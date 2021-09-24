@@ -12,7 +12,7 @@ pub async fn yt_audio(url: &str) -> Result<(String, String, Option<String>), Box
     let resp = reqwest::get(url).await?;
     let bytes = resp.bytes().await?;
     let title = video.title().to_owned();
-    let file_name = ffmpeg::convert_to_mp3(&bytes[..]).await?;
+    let file_name = ffmpeg::convert_to_mp3(&video.video_details().author, &bytes[..]).await?;
     let mut thumb = None;
     if video.video_details().thumbnails.len() != 0 {
         let resp = reqwest::get(video.video_details().thumbnails[0].url.as_str()).await?;

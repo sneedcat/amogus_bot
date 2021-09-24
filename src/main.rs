@@ -6,6 +6,7 @@ mod xkcd;
 mod yt_audio;
 mod yt_download;
 mod ffmpeg;
+mod nhentai;
 
 use std::error::Error;
 use teloxide::payloads::{SendAudioSetters, SendPhotoSetters};
@@ -25,6 +26,8 @@ enum Command {
     YtAudio(String),
     #[command(description = "returns a xkcd comic")]
     Xkcd(String),
+    #[command(description = "returns a random nhentai")]
+    Nhentai(String),
 }
 
 async fn answer(
@@ -73,6 +76,15 @@ async fn answer(
         }
         Command::Xkcd(s) => {
             let (d_url, caption) = xkcd::xkcd(s).await?;
+            let input_file = InputFile::Url(d_url);
+            cx.requester
+                .send_photo(cx.update.chat.id, input_file)
+                .caption(caption)
+                .parse_mode(ParseMode::MarkdownV2)
+                .await?
+        }
+        Command::Nhentai(s) => {
+            let (d_url, caption) = nhentai::nhentai(s).await?;
             let input_file = InputFile::Url(d_url);
             cx.requester
                 .send_photo(cx.update.chat.id, input_file)

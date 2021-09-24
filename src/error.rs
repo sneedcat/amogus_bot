@@ -6,6 +6,7 @@ pub enum Error {
     YtAudio,
     Xkcd,
     Ffmpeg,
+    Hentai(hentai::HentaiError),
 }
 
 impl Debug for Error {
@@ -16,7 +17,14 @@ impl Debug for Error {
             Error::YtAudio => write!(f, "yt_audio error"),
             Error::Xkcd => write!(f, "xkcd error"),
             Error::Ffmpeg => write!(f, "ffmpeg error"),
+            Error::Hentai(e) => write!(f, "hentai error: {}", e),
         }
+    }
+}
+
+impl From<hentai::HentaiError> for Error {
+    fn from(e: hentai::HentaiError) -> Self {
+        Error::Hentai(e)
     }
 }
 

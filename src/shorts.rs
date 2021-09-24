@@ -25,16 +25,13 @@ pub async fn shorts() -> Result<(String, String), Box<dyn Error + Sync + Send>> 
         .fetch()
         .await?;
     let video = descrambler.descramble()?;
-    let path_to_video = video.best_quality().ok_or(crate::error::Error::Shorts)?;
-    let url = &path_to_video.signature_cipher.url;
+    let stream = video.best_quality().ok_or(crate::error::Error::Shorts)?;
+    let url = &stream.signature_cipher.url;
+    println!("{}", url);
     let title = video.title();
-    let channel = &random_video["ownerText"]["runs"][0]["text"];
+    let channel = &video.video_details().author;
     let channel_url = format!(
-        "https://www.youtube.com{}",
-        random_video["ownerText"]["runs"][0]["navigationEndpoint"]["commandMetadata"]
-            ["webCommandMetadata"]["url"]
-            .as_str()
-            .ok_or(crate::error::Error::Shorts)?
+        "https://www.youtube.com/channel/{}", video.video_details().channel_id
     );
     let view_count = video.video_details().view_count;
     let caption = format!(
@@ -44,9 +41,7 @@ pub async fn shorts() -> Result<(String, String), Box<dyn Error + Sync + Send>> 
         ),
         view_count,
         escape(
-            channel
-                .as_str()
-                .ok_or(crate::error::Error::Shorts)?
+            &channel
         ),
         channel_url
     );
