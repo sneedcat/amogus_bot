@@ -1,10 +1,10 @@
 use once_cell::sync::Lazy;
-use regex::Regex;
-use reqwest::header::{HeaderValue, HeaderMap};
-use reqwest::Client;
 use rand::rngs::StdRng;
-use tokio::sync::Mutex;
 use rand::SeedableRng;
+use regex::Regex;
+use reqwest::header::{HeaderMap, HeaderValue};
+use reqwest::Client;
+use tokio::sync::Mutex;
 
 pub static SHORTS_CLIENT: Lazy<Client> = Lazy::new(|| {
     let mut headers = HeaderMap::new();
@@ -27,10 +27,11 @@ pub static XKCD_CLIENT: Lazy<Client> = Lazy::new(|| {
         .unwrap()
 });
 
-
-
-pub static RE_SHORTS: Lazy<Regex> = Lazy::new(|| Regex::new(r#""content":\{"richGridRenderer":(.*?)},"tabIdentifier":"#).unwrap());
-pub static RE_XKCD: Lazy<Regex> = Lazy::new(|| Regex::new(r#"<div id="comic">\n<img src="(.*?)" title=".*?" alt="(.*?)""#).unwrap());
+pub static RE_SHORTS: Lazy<Regex> =
+    Lazy::new(|| Regex::new(r#""content":\{"richGridRenderer":(.*?)},"tabIdentifier":"#).unwrap());
+pub static RE_XKCD: Lazy<Regex> = Lazy::new(|| {
+    Regex::new(r#"<div id="comic">\n<img src="(.*?)" title=".*?" alt="(.*?)""#).unwrap()
+});
 
 pub static RAND_GEN: Lazy<Mutex<StdRng>> = Lazy::new(|| Mutex::new(SeedableRng::from_entropy()));
 

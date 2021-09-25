@@ -1,12 +1,12 @@
 mod error;
 mod escape;
+mod ffmpeg;
+mod nhentai;
 mod shorts;
 mod statics;
 mod xkcd;
 mod yt_audio;
 mod yt_download;
-mod ffmpeg;
-mod nhentai;
 
 use std::error::Error;
 use teloxide::payloads::{SendAudioSetters, SendPhotoSetters};

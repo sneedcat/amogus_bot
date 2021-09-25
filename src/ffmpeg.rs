@@ -1,9 +1,12 @@
 use std::error::Error;
 
-use rand::RngCore;
 use crate::statics::RAND_GEN;
+use rand::RngCore;
 
-pub async fn convert_to_mp3(artist: &str, buffer: &[u8]) -> Result<String, Box<dyn Error + Send + Sync>> {
+pub async fn convert_to_mp3(
+    artist: &str,
+    buffer: &[u8],
+) -> Result<String, Box<dyn Error + Send + Sync>> {
     let name = RAND_GEN.lock().await.next_u64();
     let title = format!("{}", name);
     let new_title = format!("{}.mp3", name);
@@ -32,7 +35,7 @@ pub async fn convert_to_jpeg(buffer: &[u8]) -> Result<String, Box<dyn Error + Se
         .arg("-i")
         .arg(&title)
         .arg("-vf")
-        .arg("scale=min(320,iw):min(320,ih)")
+        .arg("scale=min'(320,iw)':'min(320,ih)'")
         .arg(&new_title)
         .spawn()?;
     let status = child.wait().await?;

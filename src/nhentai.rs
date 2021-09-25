@@ -3,7 +3,7 @@ use hentai::{Hentai, Website};
 pub async fn nhentai(
     s: String,
 ) -> Result<(String, String), Box<dyn std::error::Error + Sync + Send>> {
-    let response = if s == "" {
+    let response = if s.is_empty() {
         let response = loop {
             let resp = match Hentai::random(Website::NET).await {
                 Ok(response) => response,
@@ -29,9 +29,14 @@ pub async fn nhentai(
     };
     let mut caption = format!(
         "*{}*\nSauce: [{}]({})\nNumber of pages: {}\nTags:\n",
-        escape(&response.title.pretty.ok_or(crate::error::Error::Hentai(
-            std::io::Error::new(std::io::ErrorKind::Unsupported, "sus").into()
-        ))?),
+        escape(
+            &response
+                .title
+                .pretty
+                .ok_or_else(|| crate::error::Error::Hentai(
+                    std::io::Error::new(std::io::ErrorKind::Unsupported, "sus").into()
+                ))?
+        ),
         response.id,
         &response.url,
         response.num_pages,
