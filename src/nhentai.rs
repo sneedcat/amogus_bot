@@ -9,10 +9,14 @@ pub async fn nhentai(
                 Ok(response) => response,
                 Err(_err) => continue,
             };
+            let mut ok = false;
             for tag in &resp.tags {
                 if BANNED_TAGS.contains(&tag.name.as_str()) {
-                    continue;
+                    ok = true;
                 }
+            }
+            if ok {
+                continue;
             }
             break resp;
         };
@@ -25,15 +29,10 @@ pub async fn nhentai(
     };
     let mut caption = format!(
         "*{}*\nSauce: [{}]({})\nNumber of pages: {}\nTags:\n",
-        escape(
-            &response
-                .title
-                .pretty
-                .ok_or(crate::error::Error::Hentai(
-                    std::io::Error::new(std::io::ErrorKind::Unsupported, "sus").into()
-                ))?
-        ),
-        &response.media_id, 
+        escape(&response.title.pretty.ok_or(crate::error::Error::Hentai(
+            std::io::Error::new(std::io::ErrorKind::Unsupported, "sus").into()
+        ))?),
+        response.id,
         &response.url,
         response.num_pages,
     );

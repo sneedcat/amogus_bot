@@ -3,8 +3,11 @@ use std::error::Error;
 
 use crate::ffmpeg;
 
-pub async fn yt_audio(url: &str) -> Result<(String, String, Option<String>), Box<dyn Error + Sync + Send>> {
-    let id = Id::from_raw(url)?;
+pub async fn yt_audio(
+    url: &str,
+) -> Result<(String, String, Option<String>), Box<dyn Error + Sync + Send>> {
+    let new_url = url.trim_end().trim_start();
+    let id = Id::from_raw(new_url)?;
     let descrambler = VideoFetcher::from_id(id.into_owned())?.fetch().await?;
     let video = descrambler.descramble()?;
     let stream = video.best_quality().ok_or(crate::error::Error::YtAudio)?;
@@ -20,9 +23,5 @@ pub async fn yt_audio(url: &str) -> Result<(String, String, Option<String>), Box
         let title = ffmpeg::convert_to_jpeg(&bytes).await?;
         thumb = Some(title);
     }
-    Ok((
-        file_name,
-        title,
-        thumb
-    ))
+    Ok((file_name, title, thumb))
 }
