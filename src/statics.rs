@@ -33,3 +33,5 @@ pub static RE_SHORTS: Lazy<Regex> = Lazy::new(|| Regex::new(r#""content":\{"rich
 pub static RE_XKCD: Lazy<Regex> = Lazy::new(|| Regex::new(r#"<div id="comic">\n<img src="(.*?)" title=".*?" alt="(.*?)""#).unwrap());
 
 pub static RAND_GEN: Lazy<Mutex<StdRng>> = Lazy::new(|| Mutex::new(SeedableRng::from_entropy()));
+
+pub static BANNED_TAGS: &[&str] = &["lolicon", "yaoi"];

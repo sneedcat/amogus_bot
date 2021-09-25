@@ -14,4 +14,9 @@
 
 ### /xkcd Option<String> - sends a xkcd comic
 
+Don't forget to use
+```sh
+$ git submodule init && git submodule update
+```
+
 ## You can request other websites in Issues.

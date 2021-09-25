@@ -1,5 +1,4 @@
 use std::error::Error;
-use log::warn;
 use rustube::{Id, VideoFetcher};
 use crate::escape::escape;
 
