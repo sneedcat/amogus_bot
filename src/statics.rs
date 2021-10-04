@@ -34,5 +34,3 @@ pub static RE_XKCD: Lazy<Regex> = Lazy::new(|| {
 });
 
 pub static RAND_GEN: Lazy<Mutex<StdRng>> = Lazy::new(|| Mutex::new(SeedableRng::from_entropy()));
-
-pub static BANNED_TAGS: &[&str] = &["lolicon", "yaoi"];

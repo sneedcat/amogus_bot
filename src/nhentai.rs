@@ -1,8 +1,19 @@
-use crate::{error::Error, escape::escape, statics::BANNED_TAGS};
+use crate::{error::Error, escape::escape};
 use hentai::{Hentai, Website};
+use serde_json::Value;
+
 pub async fn nhentai(
     s: String,
 ) -> Result<(String, String), Box<dyn std::error::Error + Sync + Send>> {
+    let filters = tokio::fs::read_to_string("filters.json").await?;
+    let v: Value = serde_json::from_str(&filters)?;
+    let filters = v["filters"].as_array().ok_or(crate::error::Error::Json)?;
+    let filters: Vec<String> = filters
+        .iter()
+        .map(|s| s.as_str().ok_or(crate::error::Error::Json))
+        .filter(|s| s.is_ok())
+        .map(|s| s.unwrap().to_string())
+        .collect();
     let response = if s.is_empty() {
         let response = loop {
             let resp = match Hentai::random(Website::NET).await {
@@ -11,7 +22,7 @@ pub async fn nhentai(
             };
             let mut ok = false;
             for tag in &resp.tags {
-                if BANNED_TAGS.contains(&tag.name.as_str()) {
+                if filters.contains(&tag.name) {
                     ok = true;
                 }
             }

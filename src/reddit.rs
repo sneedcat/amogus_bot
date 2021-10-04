@@ -1,6 +1,6 @@
 use std::error::Error;
 
-use m3u8_rs::playlist::{MediaSegment, Playlist, VariantStream};
+use m3u8_rs::playlist::{Playlist, VariantStream};
 use rand::RngCore;
 use reqwest::Response;
 use roux::Subreddit;
