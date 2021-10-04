@@ -45,3 +45,20 @@ pub async fn convert_to_jpeg(buffer: &[u8]) -> Result<String, Box<dyn Error + Se
     }
     Ok(new_title)
 }
+
+pub async fn convert_audio_and_video_to_mp4(
+    folder: &str,
+) -> Result<(), Box<dyn Error + Send + Sync>> {
+    let mut child = tokio::process::Command::new("ffmpeg")
+        .arg("-i")
+        .arg(format!("{}/video", folder))
+        .arg("-i")
+        .arg(format!("{}/audio", folder))
+        .arg(format!("{}/output.mp4", folder))
+        .spawn()?;
+    let status = child.wait().await?;
+    if !status.success() {
+        return Err(crate::error::Error::Ffmpeg.into());
+    }
+    Ok(())
+}

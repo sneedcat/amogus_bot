@@ -2,7 +2,7 @@ use std::error::Error;
 
 use crate::{
     escape::escape,
-    statics::{RE_XKCD, XKCD_CLIENT},
+    statics::{CLIENT, RE_XKCD},
 };
 
 pub async fn xkcd(s: String) -> Result<(String, String), Box<dyn Error + Sync + Send>> {
@@ -11,7 +11,7 @@ pub async fn xkcd(s: String) -> Result<(String, String), Box<dyn Error + Sync + 
     } else {
         "https://xkcd.com/".to_owned()
     };
-    let resp = XKCD_CLIENT.get(&url).send().await?;
+    let resp = CLIENT.get(&url).send().await?;
     let s = resp.text().await?;
     let captures = RE_XKCD.captures(&s).ok_or(crate::error::Error::Xkcd)?;
     if captures.len() != 3 {

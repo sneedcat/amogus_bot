@@ -17,7 +17,7 @@ pub static SHORTS_CLIENT: Lazy<Client> = Lazy::new(|| {
         .unwrap()
 });
 
-pub static XKCD_CLIENT: Lazy<Client> = Lazy::new(|| {
+pub static CLIENT: Lazy<Client> = Lazy::new(|| {
     let mut headers = HeaderMap::new();
     headers.insert("Accept-Language", HeaderValue::from_static("en-US"));
     reqwest::Client::builder()

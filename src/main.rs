@@ -2,6 +2,7 @@ mod error;
 mod escape;
 mod ffmpeg;
 mod nhentai;
+mod reddit;
 mod shorts;
 mod statics;
 mod xkcd;
@@ -28,6 +29,8 @@ enum Command {
     Xkcd(String),
     #[command(description = "returns a random nhentai")]
     Nhentai(String),
+    #[command(description = "returns a random post from some subreddit")]
+    Reddit(String),
 }
 
 async fn answer(
@@ -91,6 +94,18 @@ async fn answer(
                 .caption(caption)
                 .parse_mode(ParseMode::MarkdownV2)
                 .await?
+        }
+        Command::Reddit(s) => {
+            let (folder, caption) = reddit::reddit(&s).await?;
+            let file_name = format!("{}/output.mp4", folder);
+            let input_file = InputFile::File(file_name.into());
+            cx.requester
+                .send_video(cx.update.chat_id(), input_file)
+                .caption(caption)
+                .parse_mode(ParseMode::MarkdownV2)
+                .await?;
+            tokio::fs::remove_dir_all(&folder).await?;
+            cx.update
         }
     };
 

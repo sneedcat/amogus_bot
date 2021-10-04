@@ -6,6 +6,7 @@ pub enum Error {
     YtAudio,
     Xkcd,
     Ffmpeg,
+    Reddit,
     Hentai(hentai::HentaiError),
 }
 
@@ -17,6 +18,7 @@ impl Debug for Error {
             Error::YtAudio => write!(f, "yt_audio error"),
             Error::Xkcd => write!(f, "xkcd error"),
             Error::Ffmpeg => write!(f, "ffmpeg error"),
+            Error::Reddit => write!(f, "reddit error"),
             Error::Hentai(e) => write!(f, "hentai error: {}", e),
         }
     }
