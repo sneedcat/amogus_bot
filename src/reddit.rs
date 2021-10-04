@@ -43,7 +43,7 @@ pub async fn reddit(s: &str) -> Result<(String, String), Box<dyn Error + Send + 
     let arr: Vec<_> = hot
         .data
         .children
-        .into_iter()
+        .iter()
         .filter(|post| post.data.url.is_some() && post.data.domain == "v.redd.it")
         .collect();
     if arr.is_empty() {
