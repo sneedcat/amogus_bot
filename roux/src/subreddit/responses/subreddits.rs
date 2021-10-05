@@ -21,9 +21,9 @@ pub enum AccountsActive {
     /// Reddit occasionally returns an empty array instead of an integer.
     Vector(Vec<u8>),
 }
-
 /// If the API user has user flair in this subreddit, and its user_flair_type is richtext,
 /// this will be an array containing two string elements which define the user's flair.
+
 #[derive(Debug, Deserialize)]
 pub struct RichtextFlair {
     /// contains the string text

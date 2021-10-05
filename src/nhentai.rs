@@ -8,12 +8,11 @@ pub async fn nhentai(
     let filters = tokio::fs::read_to_string("filters.json").await?;
     let v: Value = serde_json::from_str(&filters)?;
     let filters = v["filters"].as_array().ok_or(crate::error::Error::Json)?;
-    let filters: Vec<String> = filters
+    let mut filters = filters
         .iter()
         .map(|s| s.as_str().ok_or(crate::error::Error::Json))
         .filter(|s| s.is_ok())
-        .map(|s| s.unwrap().to_string())
-        .collect();
+        .map(|s| s.unwrap().to_string());
     let response = if s.is_empty() {
         let response = loop {
             let resp = match Hentai::random(Website::NET).await {
@@ -22,7 +21,7 @@ pub async fn nhentai(
             };
             let mut ok = false;
             for tag in &resp.tags {
-                if filters.contains(&tag.name) {
+                if filters.any(|x| x == tag.name) {
                     ok = true;
                 }
             }

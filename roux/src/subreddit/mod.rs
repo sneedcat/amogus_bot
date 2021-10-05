@@ -158,9 +158,7 @@ impl Subreddit {
         if let Some(options) = options {
             options.build_url(url);
         }
-        /* println!("{:?}", url);
-        let resp = self.client.get(&url.to_owned()).send().await?.text().await?;
-        dbg!(resp); */
+        
         Ok(self
             .client
             .get(&url.to_owned())
