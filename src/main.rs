@@ -14,6 +14,8 @@ use teloxide::payloads::{SendAudioSetters, SendPhotoSetters};
 use teloxide::types::{InputFile, ParseMode};
 use teloxide::{prelude::*, utils::command::BotCommand};
 
+use crate::reddit::Content;
+
 #[derive(BotCommand)]
 #[command(rename = "lowercase", description = "These commands are supported:")]
 enum Command {
@@ -96,15 +98,28 @@ async fn answer(
                 .await?
         }
         Command::Reddit(s) => {
-            let (folder, caption) = reddit::reddit(&s).await?;
-            let file_name = format!("{}/output.mp4", folder);
-            let input_file = InputFile::File(file_name.into());
-            cx.requester
-                .send_video(cx.update.chat_id(), input_file)
-                .caption(caption)
-                .parse_mode(ParseMode::MarkdownV2)
-                .await?;
-            tokio::fs::remove_dir_all(&folder).await?;
+            let (content, caption) = reddit::reddit(&s).await?;
+            match content {
+                Content::Image(image) => {
+                    let input_file = InputFile::File(image.clone().into());
+                    cx.requester
+                        .send_photo(cx.update.chat_id(), input_file)
+                        .caption(caption)
+                        .parse_mode(ParseMode::MarkdownV2)
+                        .await?;
+                    tokio::fs::remove_file(&image).await?;
+                }
+                Content::Video(folder) => {
+                    let file_name = format!("{}/output.mp4", folder);
+                    let input_file = InputFile::File(file_name.into());
+                    cx.requester
+                        .send_video(cx.update.chat_id(), input_file)
+                        .caption(caption)
+                        .parse_mode(ParseMode::MarkdownV2)
+                        .await?;
+                    tokio::fs::remove_dir_all(&folder).await?;
+                }
+            }
             cx.update
         }
     };

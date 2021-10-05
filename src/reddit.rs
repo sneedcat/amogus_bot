@@ -5,11 +5,12 @@ use rand::RngCore;
 use reqwest::Response;
 use roux::Subreddit;
 
-use crate::{
-    escape::escape,
-    ffmpeg::convert_audio_and_video_to_mp4,
-    statics::{CLIENT, RAND_GEN},
-};
+pub enum Content {
+    Image(String),
+    Video(String)
+}
+
+use crate::{escape::escape, ffmpeg::{convert_audio_and_video_to_mp4, convert_to_jpeg}, statics::{CLIENT, RAND_GEN}};
 
 async fn make_request(url: &str, file: &str) -> Result<Response, Box<dyn Error + Send + Sync>> {
     let download_url = format!("{}/{}", url, file);
@@ -38,14 +39,14 @@ async fn generate_buffer(url: &str, file: &str) -> Result<Vec<u8>, Box<dyn Error
     Ok(buf)
 }
 
-pub async fn reddit(s: &str) -> Result<(String, String), Box<dyn Error + Send + Sync>> {
+pub async fn reddit(s: &str) -> Result<(Content, String), Box<dyn Error + Send + Sync>> {
     let subreddit = Subreddit::new(s);
     let hot = subreddit.hot(25, None).await?;
     let arr: Vec<_> = hot
         .data
         .children
         .into_iter()
-        .filter(|post| post.data.url.is_some() && post.data.domain == "v.redd.it")
+        .filter(|post| post.data.url.is_some() && post.data.domain == "v.redd.it" || post.data.domain == "i.redd.it")
         .collect();
     if arr.is_empty() {
         return Err(Box::new(crate::error::Error::Reddit));
@@ -59,50 +60,56 @@ pub async fn reddit(s: &str) -> Result<(String, String), Box<dyn Error + Send + 
         post.data.num_comments,
         format!("https://reddit.com{}", post.data.permalink)
     );
-    let url = post.data.url.as_ref().unwrap();
-    let resp = make_request(url, "HLSPlaylist.m3u8").await?;
-    let bytes = resp.bytes().await?;
-    let data = match m3u8_rs::parse_playlist_res(&bytes[..]) {
-        Ok(s) => s,
-        Err(_) => return Err(Box::new(crate::error::Error::Reddit)),
-    };
-    let p = match data {
-        Playlist::MasterPlaylist(p) => p,
-        _ => return Err(Box::new(crate::error::Error::Reddit)),
-    };
-    let var = p
-        .variants
-        .iter()
-        .filter(|v| v.audio == Some("0".to_string()) && !v.alternatives.is_empty())
-        .fold(None, |acc: Option<VariantStream>, var| match acc {
-            Some(v) => {
-                let a = v.bandwidth.parse::<u64>().unwrap();
-                match var.bandwidth.parse::<u64>() {
-                    Ok(b) => {
-                        if a < b {
-                            return Some(var.clone());
+    if post.data.domain == "v.redd.it" {
+        let url = post.data.url.as_ref().unwrap();
+        let resp = make_request(url, "HLSPlaylist.m3u8").await?;
+        let bytes = resp.bytes().await?;
+        let data = match m3u8_rs::parse_playlist_res(&bytes[..]) {
+            Ok(s) => s,
+            Err(_) => return Err(Box::new(crate::error::Error::Reddit)),
+        };
+        let p = match data {
+            Playlist::MasterPlaylist(p) => p,
+            _ => return Err(Box::new(crate::error::Error::Reddit)),
+        };
+        let var = p
+            .variants
+            .iter()
+            .filter(|v| v.audio == Some("0".to_string()) && !v.alternatives.is_empty())
+            .fold(None, |acc: Option<VariantStream>, var| match acc {
+                Some(v) => {
+                    let a = v.bandwidth.parse::<u64>().unwrap();
+                    match var.bandwidth.parse::<u64>() {
+                        Ok(b) => {
+                            if a < b {
+                                return Some(var.clone());
+                            }
+                            Some(v)
                         }
-                        Some(v)
+                        Err(_) => Some(v),
                     }
-                    Err(_) => Some(v),
                 }
-            }
-            None => match var.bandwidth.parse::<u64>() {
-                Ok(_) => Some(var.clone()),
-                _ => None,
-            },
-        });
-    if var.is_none() {
-        return Err(Box::new(crate::error::Error::Reddit));
+                None => match var.bandwidth.parse::<u64>() {
+                    Ok(_) => Some(var.clone()),
+                    _ => None,
+                },
+            });
+        if var.is_none() {
+            return Err(Box::new(crate::error::Error::Reddit));
+        }
+        let var = var.unwrap();
+        let folder = RAND_GEN.lock().await.next_u64().to_string();
+        tokio::fs::create_dir(&folder).await?;
+        let last = var.alternatives.last().ok_or(crate::error::Error::Reddit)?;
+        let audio_buf = generate_buffer(url, last.uri.as_ref().unwrap()).await?;
+        tokio::fs::write(format!("{}/audio", folder), audio_buf).await?;
+        let video_buf = generate_buffer(url, &var.uri).await?;
+        tokio::fs::write(format!("{}/video", folder), video_buf).await?;
+        convert_audio_and_video_to_mp4(&folder).await?;
+        return Ok((Content::Video(folder), caption))
     }
-    let var = var.unwrap();
-    let folder = RAND_GEN.lock().await.next_u64().to_string();
-    tokio::fs::create_dir(&folder).await?;
-    let last = var.alternatives.last().ok_or(crate::error::Error::Reddit)?;
-    let audio_buf = generate_buffer(url, last.uri.as_ref().unwrap()).await?;
-    tokio::fs::write(format!("{}/audio", folder), audio_buf).await?;
-    let video_buf = generate_buffer(url, &var.uri).await?;
-    tokio::fs::write(format!("{}/video", folder), video_buf).await?;
-    convert_audio_and_video_to_mp4(&folder).await?;
-    Ok((folder, caption))
+    let resp = CLIENT.get(post.data.url.as_ref().unwrap()).send().await?;
+    let file = resp.bytes().await?;
+    let title = convert_to_jpeg(&file[..]).await?;
+    Ok((Content::Image(title), caption))
 }
