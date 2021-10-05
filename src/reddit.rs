@@ -27,13 +27,14 @@ async fn generate_buffer(url: &str, file: &str) -> Result<Vec<u8>, Box<dyn Error
         Playlist::MediaPlaylist(p) => p,
         _ => return Err(Box::new(crate::error::Error::Reddit)),
     };
-
     let mut buf = Vec::new();
-    for segment in p.segments {
-        let resp = make_request(url, &segment.uri).await?;
-        let bytes = resp.bytes().await?;
-        buf.extend_from_slice(&bytes[..]);
+    if p.segments.is_empty() {
+        return Err(Box::new(crate::error::Error::Reddit));
     }
+    let uri = &p.segments[0].uri;
+    let resp = make_request(url, uri).await?;
+    let bytes = resp.bytes().await?;
+    buf.extend_from_slice(&bytes[..]);
     Ok(buf)
 }
 
