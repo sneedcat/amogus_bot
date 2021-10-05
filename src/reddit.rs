@@ -5,11 +5,7 @@ use rand::RngCore;
 use reqwest::Response;
 use roux::Subreddit;
 
-use crate::{
-    escape::escape,
-    ffmpeg::convert_audio_and_video_to_mp4,
-    statics::{CLIENT, RAND_GEN},
-};
+use crate::{escape::escape, ffmpeg::convert_audio_and_video_to_mp4, statics::{CLIENT, RAND_GEN}};
 
 async fn make_request(url: &str, file: &str) -> Result<Response, Box<dyn Error + Send + Sync>> {
     let download_url = format!("{}/{}", url, file);

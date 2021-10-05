@@ -20,6 +20,7 @@ pub static SHORTS_CLIENT: Lazy<Client> = Lazy::new(|| {
 pub static CLIENT: Lazy<Client> = Lazy::new(|| {
     let mut headers = HeaderMap::new();
     headers.insert("Accept-Language", HeaderValue::from_static("en-US"));
+    
     reqwest::Client::builder()
         .user_agent("Mozilla/5.0 (X11; Linux x86_64; rv:88.0) Gecko/20100101 Firefox/88.0")
         .default_headers(headers)

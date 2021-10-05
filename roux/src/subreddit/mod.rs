@@ -110,16 +110,12 @@ pub struct Subreddit {
     client: Client,
 }
 
-static APP_USER_AGENT: &str = concat!(
-    env!("CARGO_PKG_NAME"),
-    "/",
-    env!("CARGO_PKG_VERSION"),
-);
+static APP_USER_AGENT: &str = "Mozilla/5.0 (X11; Linux x86_64; rv:88.0) Gecko/20100101 Firefox/88.0";
 
 impl Subreddit {
     /// Create a new `Subreddit` instance.
     pub fn new(name: &str) -> Subreddit {
-        let subreddit_url = format!("https://www.reddit.com/r/{}", name);
+        let subreddit_url = format!("https://old.reddit.com/r/{}", name);
 
         Subreddit {
             name: name.to_owned(),
@@ -159,11 +155,12 @@ impl Subreddit {
         options: Option<FeedOption>,
     ) -> Result<Submissions, RouxError> {
         let url = &mut format!("{}/{}.json?limit={}", self.url, ty, limit);
-
         if let Some(options) = options {
             options.build_url(url);
         }
-
+        /* println!("{:?}", url);
+        let resp = self.client.get(&url.to_owned()).send().await?.text().await?;
+        dbg!(resp); */
         Ok(self
             .client
             .get(&url.to_owned())
