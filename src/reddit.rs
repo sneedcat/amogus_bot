@@ -8,10 +8,14 @@ use roux::Subreddit;
 pub enum Content {
     Image(String, String),
     Video(String, String),
-    Text(String)
+    Text(String),
 }
 
-use crate::{escape::escape, ffmpeg::{convert_audio_and_video_to_mp4, convert_to_jpeg}, statics::{CLIENT, RAND_GEN}};
+use crate::{
+    escape::escape,
+    ffmpeg::{convert_audio_and_video_to_mp4, convert_to_jpeg},
+    statics::{CLIENT, RAND_GEN},
+};
 
 async fn make_request(url: &str, file: &str) -> Result<Response, Box<dyn Error + Send + Sync>> {
     let download_url = format!("{}/{}", url, file);
@@ -55,7 +59,7 @@ pub async fn reddit(s: &str) -> Result<Content, Box<dyn Error + Send + Sync>> {
     let n = RAND_GEN.lock().await.next_u64() as usize % arr.len();
     let post = &arr[n];
     println!("{:?}", post.data.selftext);
-    if post.data.selftext != "" {
+    if !post.data.selftext.is_empty() {
         let caption = format!(
             "*{}*\n{}\nScore: {}\n[Number of comments:{}]({})",
             escape(&post.data.title),
@@ -64,7 +68,7 @@ pub async fn reddit(s: &str) -> Result<Content, Box<dyn Error + Send + Sync>> {
             post.data.num_comments,
             format!("https://reddit.com{}", post.data.permalink)
         );
-        return Ok(Content::Text(caption))
+        Ok(Content::Text(caption))
     } else if post.data.domain == "v.redd.it" {
         let caption = format!(
             "*{}*\nScore: {}\n[Number of comments: {}]({})",
@@ -118,7 +122,7 @@ pub async fn reddit(s: &str) -> Result<Content, Box<dyn Error + Send + Sync>> {
         let video_buf = generate_buffer(url, &var.uri).await?;
         tokio::fs::write(format!("{}/video", folder), video_buf).await?;
         convert_audio_and_video_to_mp4(&folder).await?;
-        return Ok(Content::Video(folder, caption))
+        Ok(Content::Video(folder, caption))
     } else if true {
         let caption = format!(
             "*{}*\nScore: {}\n[Number of comments: {}]({})",
