@@ -6,8 +6,9 @@ use reqwest::Response;
 use roux::Subreddit;
 
 pub enum Content {
-    Image(String),
-    Video(String)
+    Image(String, String),
+    Video(String, String),
+    Text(String)
 }
 
 use crate::{escape::escape, ffmpeg::{convert_audio_and_video_to_mp4, convert_to_jpeg}, statics::{CLIENT, RAND_GEN}};
@@ -39,28 +40,39 @@ async fn generate_buffer(url: &str, file: &str) -> Result<Vec<u8>, Box<dyn Error
     Ok(buf)
 }
 
-pub async fn reddit(s: &str) -> Result<(Content, String), Box<dyn Error + Send + Sync>> {
+pub async fn reddit(s: &str) -> Result<Content, Box<dyn Error + Send + Sync>> {
     let subreddit = Subreddit::new(s);
-    let hot = subreddit.hot(25, None).await?;
+    let hot = subreddit.hot(35, None).await?;
     let arr: Vec<_> = hot
         .data
         .children
         .into_iter()
-        .filter(|post| post.data.url.is_some() && post.data.domain == "v.redd.it" || post.data.domain == "i.redd.it")
+        .filter(|post| post.data.url.is_some())
         .collect();
     if arr.is_empty() {
         return Err(Box::new(crate::error::Error::Reddit));
     }
     let n = RAND_GEN.lock().await.next_u64() as usize % arr.len();
     let post = &arr[n];
-    let caption = format!(
-        "*{}*\n`Score: {}`\n[Number of comments:{}]({})",
-        escape(&post.data.title),
-        post.data.score,
-        post.data.num_comments,
-        format!("https://reddit.com{}", post.data.permalink)
-    );
-    if post.data.domain == "v.redd.it" {
+    println!("{:?}", post.data.selftext);
+    if post.data.selftext != "" {
+        let caption = format!(
+            "*{}*\n{}\nScore: {}\n[Number of comments:{}]({})",
+            escape(&post.data.title),
+            escape(&post.data.selftext),
+            post.data.score,
+            post.data.num_comments,
+            format!("https://reddit.com{}", post.data.permalink)
+        );
+        return Ok(Content::Text(caption))
+    } else if post.data.domain == "v.redd.it" {
+        let caption = format!(
+            "*{}*\nScore: {}\n[Number of comments: {}]({})",
+            escape(&post.data.title),
+            post.data.score,
+            post.data.num_comments,
+            format!("https://reddit.com{}", post.data.permalink)
+        );
         let url = post.data.url.as_ref().unwrap();
         let resp = make_request(url, "HLSPlaylist.m3u8").await?;
         let bytes = resp.bytes().await?;
@@ -106,10 +118,28 @@ pub async fn reddit(s: &str) -> Result<(Content, String), Box<dyn Error + Send +
         let video_buf = generate_buffer(url, &var.uri).await?;
         tokio::fs::write(format!("{}/video", folder), video_buf).await?;
         convert_audio_and_video_to_mp4(&folder).await?;
-        return Ok((Content::Video(folder), caption))
+        return Ok(Content::Video(folder, caption))
+    } else if true {
+        let caption = format!(
+            "*{}*\nScore: {}\n[Number of comments: {}]({})",
+            escape(&post.data.title),
+            post.data.score,
+            post.data.num_comments,
+            format!("https://reddit.com{}", post.data.permalink)
+        );
+        let resp = CLIENT.get(post.data.url.as_ref().unwrap()).send().await?;
+        let file = resp.bytes().await?;
+        let title = convert_to_jpeg(&file[..]).await?;
+        Ok(Content::Image(title, caption))
+    } else {
+        let caption = format!(
+            "*{}*\n[URL]({})\nScore: {}\n[Number of comments: {}]({})",
+            escape(&post.data.title),
+            post.data.url.as_ref().unwrap(),
+            post.data.score,
+            post.data.num_comments,
+            format!("https://reddit.com{}", post.data.permalink)
+        );
+        Ok(Content::Text(caption))
     }
-    let resp = CLIENT.get(post.data.url.as_ref().unwrap()).send().await?;
-    let file = resp.bytes().await?;
-    let title = convert_to_jpeg(&file[..]).await?;
-    Ok((Content::Image(title), caption))
 }

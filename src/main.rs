@@ -98,9 +98,9 @@ async fn answer(
                 .await?
         }
         Command::Reddit(s) => {
-            let (content, caption) = reddit::reddit(&s).await?;
+            let content = reddit::reddit(&s).await?;
             match content {
-                Content::Image(image) => {
+                Content::Image(image, caption) => {
                     let input_file = InputFile::File(image.clone().into());
                     cx.requester
                         .send_photo(cx.update.chat_id(), input_file)
@@ -109,7 +109,7 @@ async fn answer(
                         .await?;
                     tokio::fs::remove_file(&image).await?;
                 }
-                Content::Video(folder) => {
+                Content::Video(folder, caption) => {
                     let file_name = format!("{}/output.mp4", folder);
                     let input_file = InputFile::File(file_name.into());
                     cx.requester
@@ -118,6 +118,12 @@ async fn answer(
                         .parse_mode(ParseMode::MarkdownV2)
                         .await?;
                     tokio::fs::remove_dir_all(&folder).await?;
+                }
+                Content::Text(text) => {
+                    cx.requester
+                        .send_message(cx.update.chat_id(), text)
+                        .parse_mode(ParseMode::MarkdownV2)
+                        .await?;
                 }
             }
             cx.update
