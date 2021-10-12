@@ -15,7 +15,7 @@ struct Definition {
 
 #[derive(Debug, Deserialize)]
 struct Definitions {
-    list: Vec<Definition>
+    list: Vec<Definition>,
 }
 
 pub async fn urban(s: String) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
@@ -26,7 +26,14 @@ pub async fn urban(s: String) -> Result<String, Box<dyn std::error::Error + Send
     let rand_num = RAND_GEN.lock().await.next_u64() as usize;
     let index = rand_num % len;
     let item = &definitions.list[index];
-    let caption = format!("*Definition:*\n{}\n\n*Example:*\n{}\nScore: {}\\-{}\n[Permalink]({})", escape(&item.definition), escape(&item.example), item.thumbs_up, item.thumbs_down, item.permalink);
+    let caption = format!(
+        "*Definition:*\n{}\n\n*Example:*\n{}\nScore: {}\\-{}\n[Permalink]({})",
+        escape(&item.definition),
+        escape(&item.example),
+        item.thumbs_up,
+        item.thumbs_down,
+        item.permalink
+    );
     //println!("{}", url);
     //println!("{:?}", definitions);
     Ok(caption)
