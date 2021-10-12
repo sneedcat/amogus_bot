@@ -34,7 +34,5 @@ pub async fn urban(s: String) -> Result<String, Box<dyn std::error::Error + Send
         item.thumbs_down,
         item.permalink
     );
-    //println!("{}", url);
-    //println!("{:?}", definitions);
     Ok(caption)
 }

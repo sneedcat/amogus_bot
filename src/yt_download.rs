@@ -13,7 +13,6 @@ pub async fn yt_download(url: &str) -> Result<(String, String), Box<dyn Error + 
         .best_quality()
         .ok_or(crate::error::Error::YtDownload)?;
     let url = quality.signature_cipher.url.as_str();
-    println!("{}", url);
     let title = video.title();
     let view_count = video.video_details().view_count;
     let caption = format!("*{}*\n`View count: {}`", escape(title), view_count,);
