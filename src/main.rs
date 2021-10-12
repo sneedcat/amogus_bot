@@ -1,39 +1,9 @@
-mod error;
-mod escape;
-mod ffmpeg;
-mod nhentai;
-mod reddit;
-mod shorts;
-mod statics;
-mod xkcd;
-mod yt_audio;
-mod yt_download;
-
 use std::error::Error;
-use teloxide::payloads::{SendAudioSetters, SendPhotoSetters};
+use teloxide::payloads::{SendAudioSetters, SendMessageSetters, SendPhotoSetters};
 use teloxide::types::{InputFile, ParseMode};
 use teloxide::{prelude::*, utils::command::BotCommand};
 
-use crate::reddit::Content;
-
-#[derive(BotCommand)]
-#[command(rename = "lowercase", description = "These commands are supported:")]
-enum Command {
-    #[command(description = "displays this text.")]
-    Help,
-    #[command(description = "returns a youtube shorts video.")]
-    Shorts,
-    #[command(description = "returns a video with audio of a youtube url")]
-    YtDownload(String),
-    #[command(description = "returns only audio of a youtube url")]
-    YtAudio(String),
-    #[command(description = "returns a xkcd comic")]
-    Xkcd(String),
-    #[command(description = "returns a random nhentai")]
-    Nhentai(String),
-    #[command(description = "returns a random post from some subreddit")]
-    Reddit(String),
-}
+use amogus_bot::Command;
 
 async fn answer(
     cx: UpdateWithCx<AutoSend<Bot>, Message>,
@@ -42,7 +12,7 @@ async fn answer(
     match command {
         Command::Help => cx.answer(Command::descriptions()).await?,
         Command::YtDownload(s) => {
-            let (d_url, caption) = yt_download::yt_download(&s).await?;
+            let (d_url, caption) = amogus_bot::yt_download::yt_download(&s).await?;
             let input_file = InputFile::Url(d_url);
             cx.requester
                 .send_video(cx.update.chat.id, input_file)
@@ -51,7 +21,7 @@ async fn answer(
                 .await?
         }
         Command::YtAudio(s) => {
-            let (file_name, title, thumb) = yt_audio::yt_audio(&s).await?;
+            let (file_name, title, thumb) = amogus_bot::yt_audio::yt_audio(&s).await?;
             let input_file = InputFile::File((&file_name).into());
             if let Some(thumb) = thumb {
                 let file = InputFile::File((&thumb).into());
@@ -71,7 +41,7 @@ async fn answer(
             cx.update
         }
         Command::Shorts => {
-            let (d_url, caption) = shorts::shorts().await?;
+            let (d_url, caption) = amogus_bot::shorts::shorts().await?;
             let input_file = InputFile::Url(d_url);
             cx.requester
                 .send_video(cx.update.chat.id, input_file)
@@ -80,7 +50,7 @@ async fn answer(
                 .await?
         }
         Command::Xkcd(s) => {
-            let (d_url, caption) = xkcd::xkcd(s).await?;
+            let (d_url, caption) = amogus_bot::xkcd::xkcd(s).await?;
             let input_file = InputFile::Url(d_url);
             cx.requester
                 .send_photo(cx.update.chat.id, input_file)
@@ -89,7 +59,7 @@ async fn answer(
                 .await?
         }
         Command::Nhentai(s) => {
-            let (d_url, caption) = nhentai::nhentai(s).await?;
+            let (d_url, caption) = amogus_bot::nhentai::nhentai(s).await?;
             let input_file = InputFile::Url(d_url);
             cx.requester
                 .send_photo(cx.update.chat.id, input_file)
@@ -98,7 +68,8 @@ async fn answer(
                 .await?
         }
         Command::Reddit(s) => {
-            let content = reddit::reddit(&s).await?;
+            let content = amogus_bot::reddit::reddit(&s).await?;
+            use amogus_bot::reddit::Content;
             match content {
                 Content::Image(image, caption) => {
                     let input_file = InputFile::File(image.clone().into());
@@ -127,6 +98,20 @@ async fn answer(
                 }
             }
             cx.update
+        }
+        Command::Urban(text) => {
+            let caption = amogus_bot::urban::urban(text).await?;
+            cx.requester
+                .send_message(cx.update.chat_id(), caption)
+                .parse_mode(ParseMode::MarkdownV2)
+                .await?
+        }
+        Command::Gpt(text) => {
+            let caption = amogus_bot::gpt::gpt(text).await?;
+            cx.requester
+                .send_message(cx.update.chat_id(), caption)
+                .parse_mode(ParseMode::MarkdownV2)
+                .await?
         }
     };
 
