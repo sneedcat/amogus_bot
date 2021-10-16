@@ -38,6 +38,7 @@ async fn answer(
                     .await?;
             }
             tokio::fs::remove_file(audio.file).await?;
+
             cx.update
         }
         Command::Shorts => {
@@ -120,6 +121,13 @@ async fn answer(
             cx.requester
                 .send_photo(cx.update.chat_id(), input_file)
                 .caption(blogpost.content)
+                .parse_mode(ParseMode::MarkdownV2)
+                .await?
+        }
+        Command::Currency { from, amount } => {
+            let content = amogus_bot::currency::currency(from, amount).await?;
+            cx.requester
+                .send_message(cx.update.chat_id(), content)
                 .parse_mode(ParseMode::MarkdownV2)
                 .await?
         }

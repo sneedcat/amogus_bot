@@ -1,3 +1,4 @@
+pub mod currency;
 pub mod error;
 pub mod escape;
 pub mod ffmpeg;
@@ -37,4 +38,6 @@ pub enum Command {
     Gpt(String),
     #[command(description = "returns a blog post from jewtube")]
     Jewtube,
+    #[command(description = "converts currency", parse_with = "split")]
+    Currency { from: String, amount: f64 },
 }

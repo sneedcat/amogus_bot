@@ -3,7 +3,7 @@ use rand::RngCore;
 
 use crate::{
     escape::escape,
-    statics::{RAND_GEN, RE_EXTRACT_JEWTUBE, RE_JEWTUBE},
+    statics::{CLIENT, RAND_GEN, RE_EXTRACT_JEWTUBE, RE_JEWTUBE},
 };
 
 pub struct BlogPost {
@@ -14,8 +14,7 @@ pub struct BlogPost {
 const URL: &str = "https://jewtube.com";
 
 pub async fn jewtube() -> Result<BlogPost, Box<dyn std::error::Error + Send + Sync>> {
-    let resp = reqwest::get(URL).await?.text().await?;
-    //println!("{}", &resp);
+    let resp = CLIENT.get(URL).send().await?.text().await?;
     let len = RE_JEWTUBE
         .captures_iter(&resp)
         .filter(|cap| cap.get(0).is_some())

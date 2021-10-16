@@ -10,10 +10,8 @@ pub struct Video {
 pub async fn yt_download(url: &str) -> Result<Video, Box<dyn Error + Sync + Send>> {
     let new_url = url.trim_end().trim_start();
     let id = Id::from_raw(new_url)?;
-
     let descrambler = VideoFetcher::from_id(id.into_owned())?.fetch().await?;
     let video = descrambler.descramble()?;
-
     let quality = video
         .streams()
         .iter()

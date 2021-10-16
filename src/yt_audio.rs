@@ -1,7 +1,7 @@
 use rustube::{Id, VideoFetcher};
 use std::error::Error;
 
-use crate::ffmpeg;
+use crate::{ffmpeg, statics::SHORTS_CLIENT};
 
 pub struct AudioFile {
     pub file: String,
@@ -16,8 +16,7 @@ pub async fn yt_audio(url: &str) -> Result<AudioFile, Box<dyn Error + Sync + Sen
     let video = descrambler.descramble()?;
     let stream = video.best_quality().ok_or(crate::error::Error::YtAudio)?;
     let url = stream.signature_cipher.url.as_str();
-    let resp = reqwest::get(url).await?;
-    let bytes = resp.bytes().await?;
+    let bytes = SHORTS_CLIENT.get(url).send().await?.bytes().await?;
     let title = video.title().to_owned();
     let file = ffmpeg::convert_to_mp3(&video.video_details().author, &bytes[..]).await?;
     let mut thumb = None;

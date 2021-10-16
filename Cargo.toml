@@ -1,7 +1,7 @@
 [package]
 name = "amogus_bot"
 version = "0.1.1"
-edition = "2018"
+edition = "2021"
 resolver = "2"
 
 [dependencies]

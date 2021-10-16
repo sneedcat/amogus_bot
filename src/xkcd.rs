@@ -16,8 +16,7 @@ pub async fn xkcd(s: String) -> Result<Comic, Box<dyn Error + Sync + Send>> {
     } else {
         "https://xkcd.com/".to_owned()
     };
-    let resp = CLIENT.get(&url).send().await?;
-    let s = resp.text().await?;
+    let s = CLIENT.get(&url).send().await?.text().await?;
     let captures = RE_XKCD.captures(&s).ok_or(crate::error::Error::Xkcd)?;
     if captures.len() != 3 {
         return Err(crate::error::Error::Xkcd.into());
