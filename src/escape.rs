@@ -10,6 +10,6 @@ pub fn escape(s: &str) -> String {
         }
         new_str.push(c);
     }
-    println!("{}", new_str);
+    //println!("{}", new_str);
     new_str
 }

@@ -31,7 +31,13 @@ pub static CLIENT: Lazy<Client> = Lazy::new(|| {
 pub static RE_SHORTS: Lazy<Regex> =
     Lazy::new(|| Regex::new(r#""content":\{"richGridRenderer":(.*?)},"tabIdentifier":"#).unwrap());
 pub static RE_XKCD: Lazy<Regex> = Lazy::new(|| {
-    Regex::new(r#"<div id="comic">\n<img src="(.*?)" title=".*?" alt="(.*?)""#).unwrap()
+    Regex::new(r#"<div id="comic">\n<img src="(.+?)" title=".+?" alt="(.+?)""#).unwrap()
+});
+pub static RE_JEWTUBE: Lazy<Regex> =
+    Lazy::new(|| Regex::new(r#"<div id="post-.+?>(.|\s)+?</div><!--/blog-item"#).unwrap());
+
+pub static RE_EXTRACT_JEWTUBE: Lazy<Regex> = Lazy::new(|| {
+    Regex::new(r#"<div class="item-thumbnail">(.|\s)+?<a href="(?P<url>.+?)" title="(?P<title>.+?)">(.|\s)*?<img width=".+?" height=".+?" src="(?P<thumb>.+?)"(.|\s)*?>(?P<comments>\d+? (Comments|Comment))(.|\s)*?<p>(?P<caption>.+?)</p>"#).unwrap()
 });
 
 pub static RAND_GEN: Lazy<Mutex<StdRng>> = Lazy::new(|| Mutex::new(SeedableRng::from_entropy()));

@@ -2,9 +2,12 @@ use crate::{error::Error, escape::escape};
 use hentai::{Hentai, Website};
 use serde_json::Value;
 
-pub async fn nhentai(
-    s: String,
-) -> Result<(String, String), Box<dyn std::error::Error + Sync + Send>> {
+pub struct PrintHentai {
+    pub thumb: String,
+    pub caption: String,
+}
+
+pub async fn nhentai(s: String) -> Result<PrintHentai, Box<dyn std::error::Error + Sync + Send>> {
     let filters = tokio::fs::read_to_string("filters.json").await?;
     let v: Value = serde_json::from_str(&filters)?;
     let filters = v["filters"].as_array().ok_or(crate::error::Error::Json)?;
@@ -57,5 +60,8 @@ pub async fn nhentai(
         caption += &format!("[{}](https://nhentai.net{}) ", escape(&tag.name), tag.url);
     }
 
-    Ok((response.thumbnail_url, caption))
+    Ok(PrintHentai {
+        thumb: response.thumbnail_url,
+        caption,
+    })
 }

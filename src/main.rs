@@ -12,58 +12,58 @@ async fn answer(
     match command {
         Command::Help => cx.answer(Command::descriptions()).await?,
         Command::YtDownload(s) => {
-            let (d_url, caption) = amogus_bot::yt_download::yt_download(&s).await?;
-            let input_file = InputFile::Url(d_url);
+            let video = amogus_bot::yt_download::yt_download(&s).await?;
+            let input_file = InputFile::Url(video.video_url);
             cx.requester
                 .send_video(cx.update.chat.id, input_file)
-                .caption(caption)
+                .caption(video.caption)
                 .parse_mode(ParseMode::MarkdownV2)
                 .await?
         }
         Command::YtAudio(s) => {
-            let (file_name, title, thumb) = amogus_bot::yt_audio::yt_audio(&s).await?;
-            let input_file = InputFile::File((&file_name).into());
-            if let Some(thumb) = thumb {
+            let audio = amogus_bot::yt_audio::yt_audio(&s).await?;
+            let input_file = InputFile::File(audio.file.as_str().into());
+            if let Some(thumb) = audio.thumb {
                 let file = InputFile::File((&thumb).into());
                 cx.requester
                     .send_audio(cx.update.chat.id, input_file)
-                    .title(title)
+                    .title(audio.title)
                     .thumb(file)
                     .await?;
                 tokio::fs::remove_file(thumb).await?;
             } else {
                 cx.requester
                     .send_audio(cx.update.chat.id, input_file)
-                    .title(title)
+                    .title(audio.title)
                     .await?;
             }
-            tokio::fs::remove_file(file_name).await?;
+            tokio::fs::remove_file(audio.file).await?;
             cx.update
         }
         Command::Shorts => {
-            let (d_url, caption) = amogus_bot::shorts::shorts().await?;
-            let input_file = InputFile::Url(d_url);
+            let short = amogus_bot::shorts::shorts().await?;
+            let input_file = InputFile::Url(short.video_url);
             cx.requester
                 .send_video(cx.update.chat.id, input_file)
-                .caption(caption)
+                .caption(short.caption)
                 .parse_mode(ParseMode::MarkdownV2)
                 .await?
         }
         Command::Xkcd(s) => {
-            let (d_url, caption) = amogus_bot::xkcd::xkcd(s).await?;
-            let input_file = InputFile::Url(d_url);
+            let comic = amogus_bot::xkcd::xkcd(s).await?;
+            let input_file = InputFile::Url(comic.comic_url);
             cx.requester
                 .send_photo(cx.update.chat.id, input_file)
-                .caption(caption)
+                .caption(comic.title)
                 .parse_mode(ParseMode::MarkdownV2)
                 .await?
         }
         Command::Nhentai(s) => {
-            let (d_url, caption) = amogus_bot::nhentai::nhentai(s).await?;
-            let input_file = InputFile::Url(d_url);
+            let hentai = amogus_bot::nhentai::nhentai(s).await?;
+            let input_file = InputFile::Url(hentai.thumb);
             cx.requester
                 .send_photo(cx.update.chat.id, input_file)
-                .caption(caption)
+                .caption(hentai.caption)
                 .parse_mode(ParseMode::MarkdownV2)
                 .await?
         }
@@ -113,8 +113,17 @@ async fn answer(
                 .parse_mode(ParseMode::MarkdownV2)
                 .await?
         }
+        Command::Jewtube => {
+            let blogpost = amogus_bot::jewtube::jewtube().await?;
+            println!("{}", &blogpost.content);
+            let input_file = InputFile::Url(blogpost.thumb);
+            cx.requester
+                .send_photo(cx.update.chat_id(), input_file)
+                .caption(blogpost.content)
+                .parse_mode(ParseMode::MarkdownV2)
+                .await?
+        }
     };
-
     Ok(())
 }
 

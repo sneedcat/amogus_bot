@@ -4,7 +4,12 @@ use rand::RngCore;
 use rustube::{IdBuf, VideoFetcher};
 use std::error::Error;
 
-pub async fn shorts() -> Result<(String, String), Box<dyn Error + Sync + Send>> {
+pub struct Short {
+    pub video_url: String,
+    pub caption: String,
+}
+
+pub async fn shorts() -> Result<Short, Box<dyn Error + Sync + Send>> {
     let resp = SHORTS_CLIENT
         .get("https://www.youtube.com/hashtag/shorts")
         .send()
@@ -27,7 +32,17 @@ pub async fn shorts() -> Result<(String, String), Box<dyn Error + Sync + Send>> 
         .fetch()
         .await?;
     let video = descrambler.descramble()?;
-    let stream = video.best_quality().ok_or(crate::error::Error::Shorts)?;
+    let stream = video
+        .streams()
+        .iter()
+        .filter(|stream| stream.includes_video_track && stream.includes_audio_track)
+        .filter(|stream| {
+            stream.quality_label.is_some()
+                && stream.quality_label.unwrap()
+                    <= rustube::video_info::player_response::streaming_data::QualityLabel::P480
+        })
+        .max_by_key(|stream| stream.quality_label)
+        .ok_or(crate::error::Error::YtDownload)?;
     let url = &stream.signature_cipher.url;
     println!("{}", url);
     let title = video.title();
@@ -44,5 +59,8 @@ pub async fn shorts() -> Result<(String, String), Box<dyn Error + Sync + Send>> 
         escape(channel),
         channel_url
     );
-    Ok((url.as_str().to_owned(), caption))
+    Ok(Short {
+        video_url: url.as_str().to_owned(),
+        caption,
+    })
 }
