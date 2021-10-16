@@ -7,6 +7,9 @@ struct Autocomplete {
 }
 
 pub async fn gpt(text: String) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
+    if &text == "" {
+        return Ok("Text shouldn't be empty".to_string())
+    }
     let payload = r#"{"prompt":""#.to_string()
         + &text
         + r#"","temperature":1,"top_k":40,"top_p":0.9,"seed":0,"stream":false}"#;
