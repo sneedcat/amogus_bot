@@ -38,6 +38,6 @@ pub enum Command {
     Gpt(String),
     #[command(description = "returns a blog post from jewtube")]
     Jewtube,
-    #[command(description = "converts currency", parse_with = "split")]
+    #[command(description = "converts currency to some other popular currencies", parse_with = "split")]
     Currency { from: String, amount: f64 },
 }

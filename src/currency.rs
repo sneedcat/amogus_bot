@@ -37,7 +37,7 @@ pub async fn currency(from: String, amount: f64) -> Result<String, Box<dyn Error
     let url = format!("{}?amount={}&base={}", URL, amount, from);
     let data: Currencies = CLIENT.get(url).send().await?.json().await?;
     let rates = data.rates;
-    let caption = format!("*{} {}* to:\n\\- {} USD 🇺🇸\n\\- {} EUR 🇪🇺\n\\- {} JPY 🇯🇵\n\\- {} GBP 🇬🇧\n\\- {} AUD 🇦🇺\n\\- {} CAD 🇨🇦\n\\- {} CHF 🇨🇭\n\\- {} RON 🇷🇴\n\\- {} BTC ₿\n\\- {} BRL 🇧🇷\n\\- {} IDR 🇮🇷",
+    let caption = format!("*{} {}* is:\n\\- {} USD 🇺🇸\n\\- {} EUR 🇪🇺\n\\- {} JPY 🇯🇵\n\\- {} GBP 🇬🇧\n\\- {} AUD 🇦🇺\n\\- {} CAD 🇨🇦\n\\- {} CHF 🇨🇭\n\\- {} RON 🇷🇴\n\\- {} BTC ₿\n\\- {} BRL 🇧🇷\n\\- {} IDR 🇮🇷",
         escape(&amount.to_string()), from,
         escape(&rates.usd.to_string()),
         escape(&rates.eur.to_string()),
