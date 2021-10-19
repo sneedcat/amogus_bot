@@ -11,31 +11,26 @@ pub async fn nhentai(s: String) -> Result<PrintHentai, Box<dyn std::error::Error
     let filters = tokio::fs::read_to_string("filters.json").await?;
     let v: Value = serde_json::from_str(&filters)?;
     let filters = v["filters"].as_array().ok_or(crate::error::Error::Json)?;
-    let filters: Vec<String> = filters
-        .iter()
-        .map(|s| s.as_str().ok_or(crate::error::Error::Json))
-        .filter(|s| s.is_ok())
-        .map(|s| s.unwrap().to_string())
-        .collect();
-    println!("{:?}", filters);
     let response = if s.is_empty() {
-        let response = loop {
+        'l : loop {
+            let mut filters: Vec<String> = filters
+                .iter()
+                .map(|s| s.as_str().ok_or(crate::error::Error::Json))
+                .filter(|s| s.is_ok())
+                .map(|s| s.unwrap().to_string())
+                .collect();
+            filters.sort();
             let resp = match Hentai::random(Website::NET).await {
                 Ok(response) => response,
-                Err(_err) => continue,
+                Err(_) => continue,
             };
-            let mut ok = false;
             for tag in &resp.tags {
-                if filters.contains(&tag.name) {
-                    ok = true;
+                if filters.binary_search(&tag.name).is_ok() {
+                    continue 'l;
                 }
             }
-            if ok {
-                continue;
-            }
             break resp;
-        };
-        response
+        }
     } else {
         match Hentai::new(s.parse::<u32>()?, Website::NET).await {
             Ok(response) => response,

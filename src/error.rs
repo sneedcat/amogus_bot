@@ -4,6 +4,7 @@ pub enum Error {
     Shorts,
     YtDownload,
     YtAudio,
+    Tts,
     Xkcd,
     Ffmpeg,
     Json,
@@ -24,6 +25,7 @@ impl Debug for Error {
             Error::Jewtube => write!(f, "jewtube error"),
             Error::Hentai(e) => write!(f, "hentai error: {}", e),
             Error::Json => write!(f, "json error"),
+            Error::Tts => write!(f, "tts error"),
         }
     }
 }

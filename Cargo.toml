@@ -21,3 +21,4 @@ rand = "0.8"
 rustube = { git = "https://github.com/DzenanJupic/rustube" }
 roux = { path = "./roux" }
 hentai = { git = "https://github.com/meguminloli/hentai" }
+memchr = "2.4.1"

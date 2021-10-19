@@ -4,12 +4,15 @@ const EL: [char; 18] = [
 
 pub fn escape(s: &str) -> String {
     let mut new_str = String::new();
-    for c in s.chars() {
-        if EL.contains(&c) {
-            new_str += r"\";
+    let mut start = 0;
+    for (i, c) in s.bytes().enumerate() {
+        if EL.contains(&(c as char)) {
+            new_str += &s[start..i];
+            new_str += "\\";
+            new_str.push(c as char);
+            start = i + 1;
         }
-        new_str.push(c);
     }
-    //println!("{}", new_str);
+    new_str.push_str(&s[start..]);
     new_str
 }

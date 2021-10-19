@@ -131,6 +131,16 @@ async fn answer(
                 .parse_mode(ParseMode::MarkdownV2)
                 .await?
         }
+        Command::Tts(text) => {
+            let path = amogus_bot::tts::tts(text).await?;
+            let input_file = InputFile::File(path.clone().into());
+            cx.requester
+                .send_audio(cx.update.chat_id(), input_file)
+                .title("sus.mp3")
+                .await?;
+            tokio::fs::remove_file(path).await?;
+            cx.update
+        }
     };
     Ok(())
 }

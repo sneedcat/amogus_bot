@@ -10,6 +10,7 @@ pub mod shorts;
 pub mod statics;
 pub mod urban;
 pub mod xkcd;
+pub mod tts;
 pub mod yt_audio;
 pub mod yt_download;
 
@@ -40,4 +41,6 @@ pub enum Command {
     Jewtube,
     #[command(description = "converts currency to some other popular currencies", parse_with = "split")]
     Currency { from: String, amount: f64 },
+    #[command(description = "uses google translate tts to speak some text")]
+    Tts(String)
 }
