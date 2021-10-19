@@ -8,9 +8,9 @@ pub mod nhentai;
 pub mod reddit;
 pub mod shorts;
 pub mod statics;
+pub mod tts;
 pub mod urban;
 pub mod xkcd;
-pub mod tts;
 pub mod yt_audio;
 pub mod yt_download;
 
@@ -39,8 +39,11 @@ pub enum Command {
     Gpt(String),
     #[command(description = "returns a blog post from jewtube")]
     Jewtube,
-    #[command(description = "converts currency to some other popular currencies", parse_with = "split")]
+    #[command(
+        description = "converts currency to some other popular currencies",
+        parse_with = "split"
+    )]
     Currency { from: String, amount: f64 },
     #[command(description = "uses google translate tts to speak some text")]
-    Tts(String)
+    Tts(String),
 }

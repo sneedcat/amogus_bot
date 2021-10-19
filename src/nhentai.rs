@@ -12,7 +12,7 @@ pub async fn nhentai(s: String) -> Result<PrintHentai, Box<dyn std::error::Error
     let v: Value = serde_json::from_str(&filters)?;
     let filters = v["filters"].as_array().ok_or(crate::error::Error::Json)?;
     let response = if s.is_empty() {
-        'l : loop {
+        'l: loop {
             let mut filters: Vec<String> = filters
                 .iter()
                 .map(|s| s.as_str().ok_or(crate::error::Error::Json))
