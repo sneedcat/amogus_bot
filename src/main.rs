@@ -141,6 +141,10 @@ async fn answer(
             tokio::fs::remove_file(path).await?;
             cx.update
         }
+        Command::Shorten(url) => {
+            let url = amogus_bot::shorten::shorten(&url).await?;
+            cx.requester.send_message(cx.update.chat_id(), url).await?
+        }
     };
     Ok(())
 }

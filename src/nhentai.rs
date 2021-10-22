@@ -31,10 +31,31 @@ pub async fn nhentai(s: String) -> Result<PrintHentai, Box<dyn std::error::Error
             }
             break resp;
         }
-    } else {
-        match Hentai::new(s.parse::<u32>()?, Website::NET).await {
+    } else if let Ok(num) = s.parse::<u32>() {
+        match Hentai::new(num, Website::NET).await {
             Ok(response) => response,
             Err(err) => return Err(Box::new(Error::Hentai(err))),
+        }
+    } else {
+        let mut tries = 5;
+        loop {
+            let resp = match Hentai::random(Website::NET).await {
+                Ok(response) => response,
+                Err(_) => continue,
+            };
+            let mut ok = false;
+            for tag in &resp.tags {
+                if tag.name == s {
+                    ok = true;
+                }
+            }
+            if ok {
+                break resp;
+            }
+            if tries <= 0 {
+                return Err(Box::new(crate::error::Error::Generic));
+            }
+            tries -= 1;
         }
     };
     let mut caption = format!(

@@ -22,3 +22,5 @@ rustube = { git = "https://github.com/DzenanJupic/rustube" }
 roux = { path = "./roux" }
 hentai = { git = "https://github.com/meguminloli/hentai" }
 memchr = "2.4.1"
+url-escape = "0.1"
+serde_urlencoded = "0.7"

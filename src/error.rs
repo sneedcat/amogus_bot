@@ -10,6 +10,7 @@ pub enum Error {
     Json,
     Reddit,
     Jewtube,
+    Generic,
     Hentai(hentai::HentaiError),
 }
 
@@ -25,6 +26,7 @@ impl Debug for Error {
             Error::Jewtube => write!(f, "jewtube error"),
             Error::Hentai(e) => write!(f, "hentai error: {}", e),
             Error::Json => write!(f, "json error"),
+            Error::Generic => write!(f, "generic error"),
             Error::Tts => write!(f, "tts error"),
         }
     }

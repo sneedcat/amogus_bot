@@ -6,6 +6,7 @@ pub mod gpt;
 pub mod jewtube;
 pub mod nhentai;
 pub mod reddit;
+pub mod shorten;
 pub mod shorts;
 pub mod statics;
 pub mod tts;
@@ -46,4 +47,6 @@ pub enum Command {
     Currency { from: String, amount: f64 },
     #[command(description = "uses google translate tts to speak some text")]
     Tts(String),
+    #[command(description = "returns a shortened link")]
+    Shorten(String),
 }
