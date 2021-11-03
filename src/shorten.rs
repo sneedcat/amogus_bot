@@ -9,7 +9,7 @@ struct ShortenResult {
 }
 
 pub async fn shorten(url: &str) -> Result<String, Box<dyn Error + Send + Sync>> {
-    let data = format!("url={}", url_escape::encode_userinfo(url).to_string());
+    let data = format!("url={}", url_escape::encode_userinfo(url));
     let result: ShortenResult = CLIENT
         .post("https://cleanuri.com/api/v1/shorten")
         .body(data)

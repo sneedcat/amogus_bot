@@ -5,7 +5,7 @@ use rustube::{IdBuf, VideoFetcher};
 use std::error::Error;
 
 pub struct Short {
-    pub video_url: String,
+    pub file_name: String,
     pub caption: String,
 }
 
@@ -42,9 +42,8 @@ pub async fn shorts() -> Result<Short, Box<dyn Error + Sync + Send>> {
                     <= rustube::video_info::player_response::streaming_data::QualityLabel::P480
         })
         .max_by_key(|stream| stream.quality_label)
-        .ok_or(crate::error::Error::YtDownload)?;
-    let url = &stream.signature_cipher.url;
-    println!("{}", url);
+        .ok_or(crate::error::Error::Shorts)?;
+    let url = stream.signature_cipher.url.clone();
     let title = video.title();
     let channel = &video.video_details().author;
     let channel_url = format!(
@@ -59,8 +58,8 @@ pub async fn shorts() -> Result<Short, Box<dyn Error + Sync + Send>> {
         escape(channel),
         channel_url
     );
-    Ok(Short {
-        video_url: url.as_str().to_owned(),
-        caption,
-    })
+    let file_name = format!("{}.mp4", RAND_GEN.lock().await.next_u64());
+    let bytes = SHORTS_CLIENT.get(url).send().await?.bytes().await?;
+    tokio::fs::write(&file_name, bytes).await?;
+    Ok(Short { file_name, caption })
 }

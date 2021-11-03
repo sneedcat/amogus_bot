@@ -30,9 +30,15 @@ pub static CLIENT: Lazy<Client> = Lazy::new(|| {
 
 pub static RE_SHORTS: Lazy<Regex> =
     Lazy::new(|| Regex::new(r#""content":\{"richGridRenderer":(.*?)},"tabIdentifier":"#).unwrap());
+
 pub static RE_XKCD: Lazy<Regex> = Lazy::new(|| {
     Regex::new(r#"<div id="comic">\n<img src="(.+?)" title=".+?" alt="(.+?)""#).unwrap()
 });
+
+pub static RE_EXTRACT_XKCD: Lazy<Regex> = Lazy::new(|| {
+    Regex::new(r#"Permanent link to this comic: <a href="https://xkcd.com/(.*?)""#).unwrap()
+});
+
 pub static RE_JEWTUBE: Lazy<Regex> =
     Lazy::new(|| Regex::new(r#"<div id="post-.+?>(.|\s)+?</div><!--/blog-item"#).unwrap());
 

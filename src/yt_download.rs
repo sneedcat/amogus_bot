@@ -1,9 +1,10 @@
-use crate::escape::escape;
+use crate::{escape::escape, statics::RAND_GEN, statics::SHORTS_CLIENT};
+use rand::RngCore;
 use rustube::{Id, VideoFetcher};
 use std::error::Error;
 
 pub struct Video {
-    pub video_url: String,
+    pub file_name: String,
     pub caption: String,
 }
 
@@ -26,9 +27,9 @@ pub async fn yt_download(url: &str) -> Result<Video, Box<dyn Error + Sync + Send
     let url = quality.signature_cipher.url.as_str();
     let title = video.title();
     let view_count = video.video_details().view_count;
-    let caption = format!("*{}*\n`View count: {}`", escape(title), view_count,);
-    Ok(Video {
-        video_url: url.to_owned(),
-        caption,
-    })
+    let file_name = format!("{}.mp4", RAND_GEN.lock().await.next_u64());
+    let bytes = SHORTS_CLIENT.get(url).send().await?.bytes().await?;
+    tokio::fs::write(&file_name, bytes).await?;
+    let caption = format!("*{}*\n`View count: {}`", escape(title), view_count);
+    Ok(Video { file_name, caption })
 }

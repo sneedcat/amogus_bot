@@ -13,12 +13,14 @@ async fn answer(
         Command::Help => cx.answer(Command::descriptions()).await?,
         Command::YtDownload(s) => {
             let video = amogus_bot::yt_download::yt_download(&s).await?;
-            let input_file = InputFile::Url(video.video_url);
+            let input_file = InputFile::File(video.file_name.clone().into());
             cx.requester
                 .send_video(cx.update.chat.id, input_file)
                 .caption(video.caption)
                 .parse_mode(ParseMode::MarkdownV2)
-                .await?
+                .await?;
+            tokio::fs::remove_file(&video.file_name).await?;
+            cx.update
         }
         Command::YtAudio(s) => {
             let audio = amogus_bot::yt_audio::yt_audio(&s).await?;
@@ -38,17 +40,18 @@ async fn answer(
                     .await?;
             }
             tokio::fs::remove_file(audio.file).await?;
-
             cx.update
         }
         Command::Shorts => {
             let short = amogus_bot::shorts::shorts().await?;
-            let input_file = InputFile::Url(short.video_url);
+            let input_file = InputFile::File(short.file_name.clone().into());
             cx.requester
                 .send_video(cx.update.chat.id, input_file)
                 .caption(short.caption)
                 .parse_mode(ParseMode::MarkdownV2)
-                .await?
+                .await?;
+            tokio::fs::remove_file(short.file_name).await?;
+            cx.update
         }
         Command::Xkcd(s) => {
             let comic = amogus_bot::xkcd::xkcd(s).await?;

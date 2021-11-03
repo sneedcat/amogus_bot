@@ -61,21 +61,21 @@ pub async fn reddit(s: &str) -> Result<Content, Box<dyn Error + Send + Sync>> {
     println!("{:?}", post.data.selftext);
     if !post.data.selftext.is_empty() {
         let caption = format!(
-            "*{}*\n{}\nScore: {}\n[Number of comments:{}]({})",
+            "*{}*\n{}\nScore: {}\n[Number of comments:{}](reddit.com{})",
             escape(&post.data.title),
             escape(&post.data.selftext),
             post.data.score,
             post.data.num_comments,
-            format!("https://reddit.com{}", post.data.permalink)
+            post.data.permalink
         );
         Ok(Content::Text(caption))
     } else if post.data.domain == "v.redd.it" {
         let caption = format!(
-            "*{}*\nScore: {}\n[Number of comments: {}]({})",
+            "*{}*\nScore: {}\n[Number of comments: {}](https://reddit.com{})",
             escape(&post.data.title),
             post.data.score,
             post.data.num_comments,
-            format!("https://reddit.com{}", post.data.permalink)
+            post.data.permalink
         );
         let url = post.data.url.as_ref().unwrap();
         let resp = make_request(url, "HLSPlaylist.m3u8").await?;
@@ -125,11 +125,11 @@ pub async fn reddit(s: &str) -> Result<Content, Box<dyn Error + Send + Sync>> {
         Ok(Content::Video(folder, caption))
     } else if true {
         let caption = format!(
-            "*{}*\nScore: {}\n[Number of comments: {}]({})",
+            "*{}*\nScore: {}\n[Number of comments: {}](https://reddit.com{})",
             escape(&post.data.title),
             post.data.score,
             post.data.num_comments,
-            format!("https://reddit.com{}", post.data.permalink)
+            post.data.permalink
         );
         let resp = CLIENT.get(post.data.url.as_ref().unwrap()).send().await?;
         let file = resp.bytes().await?;
@@ -137,12 +137,12 @@ pub async fn reddit(s: &str) -> Result<Content, Box<dyn Error + Send + Sync>> {
         Ok(Content::Image(title, caption))
     } else {
         let caption = format!(
-            "*{}*\n[URL]({})\nScore: {}\n[Number of comments: {}]({})",
+            "*{}*\n[URL]({})\nScore: {}\n[Number of comments: {}](https://reddit.com{})",
             escape(&post.data.title),
             post.data.url.as_ref().unwrap(),
             post.data.score,
             post.data.num_comments,
-            format!("https://reddit.com{}", post.data.permalink)
+            post.data.permalink
         );
         Ok(Content::Text(caption))
     }
